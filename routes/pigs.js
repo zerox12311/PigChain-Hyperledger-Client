@@ -3,7 +3,6 @@ var router = express.Router();
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
 var jwt = require('jsonwebtoken');
-var test = require('../service/test');
 
 var Fabric_Client = require('fabric-client');
 var path = require('path');
@@ -29,11 +28,27 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/register', (req, res, next) => {
+    const name = req.body.name;
+    if (!name) {
+        res.status(400).end('Please input name');
+    }
+    const email = req.body.email;
+    if (!email) {
+        res.status(400).end('Please input email');
+    }
+    const password = req.body.password;
+    if (!password) {
+        res.status(400).end('Please input password');
+    }
+    const company = req.body.company;
+    if (!company) {
+        res.status(400).end('Please input company');
+    }
     new User({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        company: req.body.company,
+        name,
+        email,
+        password,
+        company
     }).save(function (err, user, count) {
         if (err) {
             res.status(400).end();
@@ -43,6 +58,14 @@ router.post('/register', (req, res, next) => {
 })
 
 router.post('/login', (req, res, next) => {
+    const email = req.body.email;
+    if (!email) {
+        res.status(400).end('Please input email');
+    }
+    const password = req.body.password;
+    if (!password) {
+        res.status(400).end('Please input password');
+    }
     User.findOne({ email: req.body.email }, (err, data) => {
         if (err) {
             res.send(err);
@@ -54,7 +77,7 @@ router.post('/login', (req, res, next) => {
             }, 'secret', { expiresIn: '1d' });
             res.send({ token });
         } else {
-            res.status(400).send('Login fail');
+            res.status(400).end('Login fail');
         }
 
     })
@@ -74,11 +97,11 @@ router.post('/addAction', (req, res, next) => {
         console.log(decoded);
         const pigId = req.body.pigId;
         if (!pigId) {
-            res.status(400).send('Please input pig id');
+            res.status(400).end('Please input pig id');
         }
         const actionName = req.body.actionName;
         if (!actionName) {
-            res.status(400).send('Please input action name');
+            res.status(400).end('Please input action name');
         }
         const company = decoded.company;
         const date = new Date().toISOString().slice(0, 10);
@@ -125,7 +148,7 @@ router.post('/addAction', (req, res, next) => {
             if (query_responses && query_responses.length == 1) {
                 if (query_responses[0] instanceof Error) {
                     console.error("error from query = ", query_responses[0]);
-                    res.status(400).send(query_responses[0]);
+                    res.status(400).end(query_responses[0]);
                 } else {
                     console.log("Response is ", query_responses[0].toString());
                     res.send(query_responses[0].toString());
@@ -135,7 +158,7 @@ router.post('/addAction', (req, res, next) => {
                 console.log("No payloads were returned from query");
             }
         }).catch((err) => {
-            res.status(400).send(err);
+            res.status(400).end(err);
             console.error('Failed to query successfully :: ' + err);
         });
 
@@ -189,7 +212,7 @@ router.get('/queryPig', async (req, res, next) => {
         if (query_responses && query_responses.length == 1) {
             if (query_responses[0] instanceof Error) {
                 console.error("error from query = ", query_responses[0]);
-                res.status(400).send(query_responses[0]);
+                res.status(400).end(query_responses[0]);
             } else {
                 console.log("Response is ", query_responses[0].toString());
                 res.send(query_responses[0].toString());
@@ -199,7 +222,7 @@ router.get('/queryPig', async (req, res, next) => {
             console.log("No payloads were returned from query");
         }
     }).catch((err) => {
-        res.status(400).send(err);
+        res.status(400).end(err);
         console.error('Failed to query successfully :: ' + err);
     });
 })
