@@ -137,8 +137,9 @@ router.post('/addAction', (req, res, next) => {
                 //targets : --- letting this default to the peers assigned to the channel
                 chaincodeId: 'pigchain',
                 fcn: 'recordPig',
-                args: [pigId, company, actionName, date]
+                args: [pigId.toString(), company, actionName, date]
             };
+            console.log(pigId, company, actionName, date);
 
             // send the query proposal to the peer
             return channel.queryByChaincode(request);
@@ -161,13 +162,11 @@ router.post('/addAction', (req, res, next) => {
             res.status(400).end(err);
             console.error('Failed to query successfully :: ' + err);
         });
-
-        res.send(decoded);
     });
 })
 
 router.get('/queryPig', async (req, res, next) => {
-    const pigId = req.body.pigId;
+    const pigId = req.query.pigId;
     if (!pigId) {
         res.status(400).send('Please input pig id');
     }
@@ -201,7 +200,7 @@ router.get('/queryPig', async (req, res, next) => {
             //targets : --- letting this default to the peers assigned to the channel
             chaincodeId: 'pigchain',
             fcn: 'queryPigHistory',
-            args: [pigId]
+            args: [pigId.toString()]
         };
 
         // send the query proposal to the peer
